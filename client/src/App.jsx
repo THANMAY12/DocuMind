@@ -1,56 +1,89 @@
-import { FileText } from "lucide-react";
+import {
+    FileText,
+    Sparkles,
+    ShieldCheck,
+} from "lucide-react";
+import FileUpload from "./components/FileUpload";
 
 function App() {
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-            <div className="w-full max-w-4xl">
+        <div className="flex min-h-screen flex-col bg-gray-50">
 
-                {/* Header */}
-                <div className="text-center mb-10">
+            {/* Main content */}
+            <main className="flex-1 px-4 py-10 sm:px-6 lg:py-16">
+                <div className="mx-auto w-full max-w-6xl">
 
-                    <div className="flex justify-center mb-4">
-                        <div className="bg-black text-white p-3 rounded-xl">
-                            <FileText size={32} />
+                    {/* Header */}
+                    <header className="mx-auto mb-10 max-w-2xl text-center">
+
+                        <div className="mb-5 flex justify-center">
+                            <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm">
+                                <Sparkles size={16} />
+                                AI-powered document analysis
+                            </div>
                         </div>
+
+                        <div className="mb-5 flex justify-center">
+                            <div className="rounded-2xl bg-gray-900 p-3 text-white shadow-lg">
+                                <FileText size={30} />
+                            </div>
+                        </div>
+
+                        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+                            DocuMind
+                        </h1>
+
+                        <p className="mt-4 text-base leading-7 text-gray-500 sm:text-lg">
+                            Turn lengthy documents into clear summaries,
+                            key points, and useful insights.
+                        </p>
+                    </header>
+
+                    {/* Upload */}
+                    <FileUpload />
+
+                </div>
+            </main>
+
+            {/* Footer */}
+            <footer className="border-t border-gray-200 bg-white">
+                <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6">
+
+                    <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-gray-900 p-1.5 text-white">
+                            <FileText size={16} />
+                        </div>
+
+                        <span className="text-sm font-semibold text-gray-800">
+                            DocuMind
+                        </span>
                     </div>
 
-                    <h1 className="text-4xl font-bold text-gray-900">
-                        DocuMind
-                    </h1>
+                    <div className="flex items-center gap-5 text-sm text-gray-500">
 
-                    <p className="mt-3 text-gray-600">
-                        Turn documents into clear, actionable insights.
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck size={16} />
+                            <span>Secure document processing</span>
+                        </div>
+
+                        <a
+    href="https://github.com/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="transition hover:text-gray-900"
+>
+    GitHub
+</a>
+
+                    </div>
+
+                    <p className="text-xs text-gray-400">
+                        © {new Date().getFullYear()} DocuMind
                     </p>
 
                 </div>
+            </footer>
 
-                {/* Upload Area */}
-                <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center">
-
-                    <FileText
-                        size={48}
-                        className="mx-auto text-gray-400 mb-4"
-                    />
-
-                    <h2 className="text-xl font-semibold text-gray-800">
-                        Upload your document
-                    </h2>
-
-                    <p className="text-gray-500 mt-2">
-                        Drag and drop a PDF or image here
-                    </p>
-
-                    <button className="mt-6 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800">
-                        Choose File
-                    </button>
-
-                    <p className="text-xs text-gray-400 mt-4">
-                        Supported formats: PDF, PNG, JPG, JPEG
-                    </p>
-
-                </div>
-
-            </div>
         </div>
     );
 }
