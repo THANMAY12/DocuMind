@@ -18,6 +18,7 @@ function FileUpload() {
     const inputRef = useRef(null);
     const [extractedText, setExtractedText] = useState("");
     const [pageCount, setPageCount] = useState(null);
+    const [extractionMeta, setExtractionMeta] = useState(null);
     const [file, setFile] = useState(null);
     const [error, setError] = useState("");
     const [isDragging, setIsDragging] = useState(false);
@@ -33,6 +34,7 @@ function FileUpload() {
         setError("");
         setUploaded(false);
         setUploadedFilename("");
+        setExtractionMeta(null);
 
         if (!selectedFile) return;
 
@@ -65,6 +67,7 @@ function FileUpload() {
         setError("");
         setUploaded(false);
         setUploadedFilename("");
+        setExtractionMeta(null);
         setExtractedText("");
         setPageCount(null);
         setSummary(null);
@@ -95,6 +98,13 @@ function FileUpload() {
 
             setExtractedText(data.extraction.text);
             setPageCount(data.extraction.pages);
+            if (data.extraction) {
+                setExtractionMeta({
+                    pages: data.extraction.pages,
+                    characterCount: data.extraction.characterCount,
+                    method: data.extraction.method,
+                });
+            }
             if (data.file && data.file.filename) {
                 setUploadedFilename(data.file.filename);
             }
@@ -213,17 +223,34 @@ function FileUpload() {
                         </button>
                     )}
 
-                    {uploaded && (
-                        <div className="mt-6 rounded-xl bg-gray-50 p-5">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle size={22} className="text-gray-800" />
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Document processed successfully
-                                    </p>
-                                    <p className="text-sm text-gray-500">
-                                        Your document is ready for analysis.
-                                    </p>
+                    {uploaded && extractionMeta && (
+                        <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="rounded-xl border border-gray-200 bg-white p-2.5 text-gray-700 shadow-sm">
+                                        <CheckCircle size={20} className="text-gray-900" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-900 sm:text-base">
+                                            Document processed successfully
+                                        </p>
+                                        <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+                                            {file.type === "application/pdf"
+                                                ? (extractionMeta.method === "ocr" ? "Scanned PDF" : "PDF")
+                                                : "Image"}
+                                            {extractionMeta.pages ? ` • ${extractionMeta.pages} ${extractionMeta.pages === 1 ? "page" : "pages"}` : ""}
+                                            {typeof extractionMeta.characterCount === "number"
+                                                ? ` • ${extractionMeta.characterCount.toLocaleString()} characters`
+                                                : ""}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="self-start sm:self-center">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+                                        <span className="h-2 w-2 rounded-full bg-gray-900" />
+                                        Extraction: {extractionMeta.method === "pdf" ? "PDF text" : "OCR"}
+                                    </span>
                                 </div>
                             </div>
                         </div>
