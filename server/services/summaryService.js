@@ -21,6 +21,15 @@ Analyze the document below.
 
 ${instruction}
 
+Instructions:
+1. Create a clear summary.
+2. Identify the most important key points.
+3. Identify the main ideas.
+4. Provide practical, specific suggestions for improving the document.
+5. When evaluating suggestions, consider clarity, organization, completeness, missing information, readability, supporting evidence, and actionable improvements.
+6. Do not invent facts that are not present in the document.
+7. If the document is already well-written, provide only meaningful improvements.
+
 Return ONLY valid JSON in this exact structure:
 
 {
@@ -33,6 +42,11 @@ Return ONLY valid JSON in this exact structure:
   "mainIdeas": [
     "Main idea 1",
     "Main idea 2"
+  ],
+  "suggestions": [
+    "Improvement suggestion 1",
+    "Improvement suggestion 2",
+    "Improvement suggestion 3"
   ]
 }
 

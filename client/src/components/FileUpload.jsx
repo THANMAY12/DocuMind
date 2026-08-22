@@ -460,6 +460,29 @@ function FileUpload() {
             </div>
         )}
 
+        {Array.isArray(summary.suggestions) && summary.suggestions.length > 0 && (
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                    Improvement Suggestions
+                </h3>
+
+                <p className="mt-1 text-sm text-gray-500">
+                    Practical suggestions based on the document content.
+                </p>
+
+                <ul className="mt-5 space-y-3">
+                    {summary.suggestions.map((suggestion, index) => (
+                        <li
+                            key={index}
+                            className="rounded-xl bg-gray-50 p-4 text-sm leading-6 text-gray-600"
+                        >
+                            {suggestion}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+
     </div>
 )}
 
