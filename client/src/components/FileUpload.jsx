@@ -19,7 +19,8 @@ const allowedTypes = [
 
 function FileUpload() {
     const inputRef = useRef(null);
-
+    const [extractedText, setExtractedText] = useState("");
+    const [pageCount, setPageCount] = useState(null);
     const [file, setFile] = useState(null);
     const [error, setError] = useState("");
     const [isDragging, setIsDragging] = useState(false);
@@ -61,6 +62,8 @@ function FileUpload() {
         setFile(null);
         setError("");
         setUploaded(false);
+        setExtractedText("");
+        setPageCount(null);
     };
 
     const uploadFile = async () => {
@@ -75,7 +78,7 @@ function FileUpload() {
             formData.append("document", file);
 
             const response = await fetch(
-                "http://localhost:5000/api/documents/upload",
+                `${import.meta.env.VITE_API_URL}/api/documents/upload`,
                 {
                     method: "POST",
                     body: formData,
@@ -89,6 +92,9 @@ function FileUpload() {
             }
 
             console.log(data);
+
+            setExtractedText(data.extraction.text);
+            setPageCount(data.extraction.pages);
             setUploaded(true);
         } catch (error) {
             console.error(error);
@@ -121,7 +127,7 @@ function FileUpload() {
 
             {!file ? (
                 <>
-                    {/* Upload area */}
+                    {/* Upload area*/}
                     <div
                         onDragOver={(event) => {
                             event.preventDefault();
@@ -195,7 +201,7 @@ function FileUpload() {
                         </div>
                     </div>
 
-                    {/* Error */}
+                    {/* Error Message*/}
                     {error && (
                         <div className="mt-4 flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">
                             <AlertCircle size={20} />
@@ -204,7 +210,8 @@ function FileUpload() {
                     )}
                 </>
             ) : (
-                /* Selected file */
+
+
                 <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
 
                     <div className="flex items-start justify-between gap-4">
@@ -235,8 +242,6 @@ function FileUpload() {
                             <X size={20} />
                         </button>
                     </div>
-
-                    {/* Ready status */}
                     {!uploaded && !isUploading && (
                         <div className="mt-6 flex items-center gap-3 rounded-xl bg-gray-50 p-4">
                             <CheckCircle
@@ -256,7 +261,7 @@ function FileUpload() {
                         </div>
                     )}
 
-                    {/* Upload button */}
+                    {/*Upload button*/}
                     {!uploaded && (
                         <button
                             type="button"
@@ -291,6 +296,31 @@ function FileUpload() {
                                     <p className="font-medium text-gray-900">
                                         Document uploaded successfully
                                     </p>
+                                    {uploaded && extractedText && (
+                                        <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <div>
+                                                    <h3 className="font-semibold text-gray-900">
+                                                        Extracted Text
+                                                    </h3>
+
+                                                    {pageCount && (
+                                                        <p className="mt-1 text-xs text-gray-500">
+                                                            {pageCount} pages
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <span className="text-xs text-gray-400">
+                                                    {extractedText.length.toLocaleString()} characters
+                                                </span>
+                                            </div>
+
+                                            <div className="max-h-80 overflow-y-auto rounded-xl bg-white p-4 text-sm leading-6 text-gray-600">
+                                                {extractedText}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <p className="text-sm text-gray-500">
                                         Your document is ready for analysis.
@@ -300,7 +330,7 @@ function FileUpload() {
                         </div>
                     )}
 
-                    {/* Error */}
+                    {/*Error Message*/}
                     {error && (
                         <div className="mt-4 flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">
                             <AlertCircle size={20} />

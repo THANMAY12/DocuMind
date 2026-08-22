@@ -1,20 +1,15 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
+
+const extractPdfText = require("../services/pdfService");
 
 const router = express.Router();
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-
+    destination: "uploads/",
     filename: (req, file, cb) => {
-        const uniqueName =
-            `${Date.now()}-${Math.round(Math.random() * 1E9)}` +
-            path.extname(file.originalname);
-
-        cb(null, uniqueName);
+        const fileName = `${Date.now()}-${file.originalname}`;
+        cb(null, fileName);
     },
 });
 
@@ -35,30 +30,52 @@ const upload = multer({
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error("Only PDF, PNG, and JPG files are allowed."));
+            cb(new Error("Only PDF, PNG and JPG files are allowed."));
         }
     },
 });
 
-router.post("/upload", upload.single("document"), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({
+router.post("/upload", upload.single("document"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Please select a document.",
+            });
+        }
+
+        let text = "";
+        let pages = null;
+
+        if (req.file.mimetype === "application/pdf") {
+            const result = await extractPdfText(req.file.path);
+
+            text = result.text;
+            pages = result.pages;
+        }
+
+        res.json({
+            success: true,
+            message: "Document processed successfully.",
+            file: {
+                name: req.file.originalname,
+                type: req.file.mimetype,
+                size: req.file.size,
+            },
+            extraction: {
+                text,
+                pages,
+                characterCount: text.length,
+            },
+        });
+    } catch (error) {
+        console.error("Document upload error:", error);
+
+        res.status(500).json({
             success: false,
-            message: "No document was uploaded.",
+            message: "Unable to process the document.",
         });
     }
-
-    res.status(200).json({
-        success: true,
-        message: "Document uploaded successfully.",
-        file: {
-            originalName: req.file.originalname,
-            filename: req.file.filename,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            path: req.file.path,
-        },
-    });
 });
 
 module.exports = router;
