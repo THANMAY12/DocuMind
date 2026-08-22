@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const extractImageText = require("../services/ocrService");
 const extractPdfText = require("../services/pdfService");
-
+const generateSummary = require("../services/summaryService");
 const router = express.Router();
 
 const storage = multer.diskStorage({
@@ -35,6 +35,7 @@ const upload = multer({
     },
 });
 
+// Upload route 
 router.post("/upload", upload.single("document"), async (req, res) => {
     try {
         if (!req.file) {
@@ -49,7 +50,6 @@ router.post("/upload", upload.single("document"), async (req, res) => {
 
         if (req.file.mimetype === "application/pdf") {
             const result = await extractPdfText(req.file.path);
-
             text = result.text;
             pages = result.pages;
         } else {
@@ -79,5 +79,40 @@ router.post("/upload", upload.single("document"), async (req, res) => {
         });
     }
 });
+
+// Ai summary 
+router.post("/summarize", async (req, res) => {
+    try {
+        const { text, length } = req.body;
+
+        if (!text) {
+            return res.status(400).json({
+                success: false,
+                message: "No document text was provided.",
+            });
+        }
+
+        const MAX_TEXT_LENGTH = 50000;
+        const documentText = text.slice(0, MAX_TEXT_LENGTH);
+
+        const summary = await generateSummary(
+            documentText,
+            length
+        );
+
+        res.json({
+            success: true,
+            summary,
+        });
+    } catch (error) {
+        console.error("Summary generation error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to generate summary.",
+        });
+    }
+});
+
 
 module.exports = router;

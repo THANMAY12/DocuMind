@@ -26,7 +26,11 @@ function FileUpload() {
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploaded, setUploaded] = useState(false);
-
+    const [summary, setSummary] = useState(null);
+    const [summaryLength, setSummaryLength] = useState("medium");
+    const [isSummarizing, setIsSummarizing] = useState(false);
+    const [summaryError, setSummaryError] = useState("");
+    
     const selectFile = (selectedFile) => {
         setError("");
         setUploaded(false);
@@ -64,6 +68,8 @@ function FileUpload() {
         setUploaded(false);
         setExtractedText("");
         setPageCount(null);
+        setSummary(null);
+        setSummaryError("");
     };
 
     const uploadFile = async () => {
@@ -120,6 +126,47 @@ function FileUpload() {
         }
 
         return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    };
+
+    const generateSummary = async () => {
+        if (!extractedText) {
+            setSummaryError("There is no text available to summarize.");
+            return;
+        }
+
+        setIsSummarizing(true);
+        setSummaryError("");
+
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/documents/summarize`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        text: extractedText,
+                        length: summaryLength,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Summary generation failed.");
+            }
+
+            setSummary(data.summary);
+        } catch (error) {
+            console.error("Summary error:", error);
+            setSummaryError(
+                "Unable to generate the summary. Please try again."
+            );
+        } finally {
+            setIsSummarizing(false);
+        }
     };
 
     return (
@@ -285,50 +332,129 @@ function FileUpload() {
 
                     {/* Success */}
                     {uploaded && (
-                        <div className="mt-6 rounded-xl bg-gray-50 p-5">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle
-                                    size={22}
-                                    className="text-gray-800"
-                                />
+    <div className="mt-6 rounded-xl bg-gray-50 p-5">
+        <div className="flex items-center gap-3">
+            <CheckCircle
+                size={22}
+                className="text-gray-800"
+            />
 
-                                <div>
-                                    <p className="font-medium text-gray-900">
-                                        Document uploaded successfully
-                                    </p>
-                                    {uploaded && extractedText && (
-                                        <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                                            <div className="mb-4 flex items-center justify-between">
-                                                <div>
-                                                    <h3 className="font-semibold text-gray-900">
-                                                        Extracted Text
-                                                    </h3>
+            <div>
+                <p className="font-medium text-gray-900">
+                    Document processed successfully
+                </p>
 
-                                                    {pageCount && (
-                                                        <p className="mt-1 text-xs text-gray-500">
-                                                            {pageCount} pages
-                                                        </p>
-                                                    )}
-                                                </div>
+                <p className="text-sm text-gray-500">
+                    Your document is ready for analysis.
+                </p>
+            </div>
+        </div>
+    </div>
+)}  {uploaded && extractedText && (
+    <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6">
+        <h3 className="font-semibold text-gray-900">
+            Generate Summary
+        </h3>
 
-                                                <span className="text-xs text-gray-400">
-                                                    {extractedText.length.toLocaleString()} characters
-                                                </span>
-                                            </div>
+        <p className="mt-1 text-sm text-gray-500">
+            Choose how detailed you want your summary to be.
+        </p>
 
-                                            <div className="max-h-80 overflow-y-auto rounded-xl bg-white p-4 text-sm leading-6 text-gray-600">
-                                                {extractedText}
-                                            </div>
-                                        </div>
-                                    )}
+        <div className="mt-5 grid grid-cols-3 gap-3">
+            {["short", "medium", "long"].map((length) => (
+                <button
+                    key={length}
+                    type="button"
+                    onClick={() => setSummaryLength(length)}
+                    className={`rounded-xl border px-4 py-3 text-sm font-medium capitalize transition ${
+                        summaryLength === length
+                            ? "border-gray-900 bg-gray-900 text-white"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
+                    }`}
+                >
+                    {length}
+                </button>
+            ))}
+        </div>
 
-                                    <p className="text-sm text-gray-500">
-                                        Your document is ready for analysis.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+        <button
+            type="button"
+            onClick={generateSummary}
+            disabled={isSummarizing}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 px-6 py-3.5 font-medium text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+            {isSummarizing ? (
+                <>
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Generating Summary...
+                </>
+            ) : (
+                "Generate Summary"
+            )}
+        </button>
+
+        {summaryError && (
+            <div className="mt-4 rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
+                {summaryError}
+            </div>
+        )}
+    </div>
+)}
+{summary && (
+    <div className="mt-6 space-y-6">
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+                Summary
+            </h3>
+
+            <p className="mt-4 leading-7 text-gray-600">
+                {summary.summary}
+            </p>
+        </div>
+
+        {Array.isArray(summary.keyPoints) && summary.keyPoints.length > 0 && (
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                    Key Points
+                </h3>
+
+                <ul className="mt-4 space-y-3">
+                    {summary.keyPoints.map((point, index) => (
+                        <li
+                            key={index}
+                            className="flex gap-3 text-gray-600"
+                        >
+                            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gray-900" />
+                            <span>{point}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+
+        {Array.isArray(summary.mainIdeas) && summary.mainIdeas.length > 0 && (
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                    Main Ideas
+                </h3>
+
+                <ul className="mt-4 space-y-3">
+                    {summary.mainIdeas.map((idea, index) => (
+                        <li
+                            key={index}
+                            className="flex gap-3 text-gray-600"
+                        >
+                            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gray-900" />
+                            <span>{idea}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )}
+
+    </div>
+)}
 
                     {/*Error Message*/}
                     {error && (
