@@ -1,5 +1,7 @@
 const express = require("express");
 const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const extractImageText = require("../services/ocrService");
 const extractPdfText = require("../services/pdfService");
 const generateSummary = require("../services/summaryService");
@@ -61,6 +63,7 @@ router.post("/upload", upload.single("document"), async (req, res) => {
             message: "Document processed successfully.",
             file: {
                 name: req.file.originalname,
+                filename: req.file.filename,
                 type: req.file.mimetype,
                 size: req.file.size,
             },
@@ -83,7 +86,7 @@ router.post("/upload", upload.single("document"), async (req, res) => {
 // Ai summary 
 router.post("/summarize", async (req, res) => {
     try {
-        const { text, length } = req.body;
+        const { text, length, filename } = req.body;
 
         if (!text) {
             return res.status(400).json({
@@ -99,6 +102,17 @@ router.post("/summarize", async (req, res) => {
             documentText,
             length
         );
+
+        // Delete temporary upload file after successful summarization
+        if (filename) {
+            const safeFilename = path.basename(filename);
+            const filePath = path.join(__dirname, "../uploads", safeFilename);
+            fs.unlink(filePath, (err) => {
+                if (err && err.code !== "ENOENT") {
+                    console.error("Failed to delete temp file:", err.message);
+                }
+            });
+        }
 
         res.json({
             success: true,

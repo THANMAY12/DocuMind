@@ -26,6 +26,7 @@ function FileUpload() {
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploaded, setUploaded] = useState(false);
+    const [uploadedFilename, setUploadedFilename] = useState("");
     const [summary, setSummary] = useState(null);
     const [summaryLength, setSummaryLength] = useState("medium");
     const [isSummarizing, setIsSummarizing] = useState(false);
@@ -34,6 +35,7 @@ function FileUpload() {
     const selectFile = (selectedFile) => {
         setError("");
         setUploaded(false);
+        setUploadedFilename("");
 
         if (!selectedFile) return;
 
@@ -66,6 +68,7 @@ function FileUpload() {
         setFile(null);
         setError("");
         setUploaded(false);
+        setUploadedFilename("");
         setExtractedText("");
         setPageCount(null);
         setSummary(null);
@@ -84,7 +87,7 @@ function FileUpload() {
             formData.append("document", file);
 
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/documents/upload`,
+                `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/documents/upload`,
                 {
                     method: "POST",
                     body: formData,
@@ -101,6 +104,9 @@ function FileUpload() {
 
             setExtractedText(data.extraction.text);
             setPageCount(data.extraction.pages);
+            if (data.file && data.file.filename) {
+                setUploadedFilename(data.file.filename);
+            }
             setUploaded(true);
         } catch (error) {
             console.error(error);
@@ -148,6 +154,7 @@ function FileUpload() {
                     body: JSON.stringify({
                         text: extractedText,
                         length: summaryLength,
+                        filename: uploadedFilename,
                     }),
                 }
             );
