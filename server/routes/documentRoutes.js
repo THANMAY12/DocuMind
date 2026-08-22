@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-
+const extractImageText = require("../services/ocrService");
 const extractPdfText = require("../services/pdfService");
 
 const router = express.Router();
@@ -52,6 +52,8 @@ router.post("/upload", upload.single("document"), async (req, res) => {
 
             text = result.text;
             pages = result.pages;
+        } else {
+            text = await extractImageText(req.file.path);
         }
 
         res.json({
