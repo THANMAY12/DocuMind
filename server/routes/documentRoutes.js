@@ -49,13 +49,16 @@ router.post("/upload", upload.single("document"), async (req, res) => {
 
         let text = "";
         let pages = null;
+        let method = "ocr";
 
         if (req.file.mimetype === "application/pdf") {
             const result = await extractPdfText(req.file.path);
             text = result.text;
             pages = result.pages;
+            method = result.method || "pdf";
         } else {
             text = await extractImageText(req.file.path);
+            method = "ocr";
         }
 
         res.json({
@@ -71,6 +74,7 @@ router.post("/upload", upload.single("document"), async (req, res) => {
                 text,
                 pages,
                 characterCount: text.length,
+                method,
             },
         });
     } catch (error) {
