@@ -22,13 +22,15 @@ Analyze the document below.
 ${instruction}
 
 Instructions:
-1. Create a clear summary.
-2. Identify the most important key points.
-3. Identify the main ideas.
-4. Provide practical, specific suggestions for improving the document.
-5. When evaluating suggestions, consider clarity, organization, completeness, missing information, readability, supporting evidence, and actionable improvements.
-6. Do not invent facts that are not present in the document.
-7. If the document is already well-written, provide only meaningful improvements.
+1. Create a clear summary based strictly on the text provided.
+2. Identify the most important key points as bullet items.
+3. Identify the main ideas of the document.
+4. Provide practical, highly specific improvement suggestions tailored directly to the document content.
+5. Every suggestion MUST reference specific details, terms, codes, missing context, inconsistencies, or sections found in the text.
+6. AVOID generic advice such as "Improve formatting", "Add more details", or "Make the document clearer". Explain specifically WHAT should be changed and WHY based on the text.
+7. Consider: missing context, unexplained terminology or identifiers, structural organization, missing supporting evidence, incomplete information, readability, and inconsistencies.
+8. Do not invent facts or assume details not present in the document.
+9. If the document is already well-written, provide only meaningful, high-value suggestions.
 
 Return ONLY valid JSON in this exact structure:
 
@@ -44,9 +46,8 @@ Return ONLY valid JSON in this exact structure:
     "Main idea 2"
   ],
   "suggestions": [
-    "Improvement suggestion 1",
-    "Improvement suggestion 2",
-    "Improvement suggestion 3"
+    "Specific improvement suggestion 1",
+    "Specific improvement suggestion 2"
   ]
 }
 
